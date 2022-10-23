@@ -8,65 +8,88 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace CustomMSG
 {
     public partial class FrmMain : Form
     {
-        Label lab = new Label();
+        readonly Label label = new Label();
+        Color backColor = Color.MediumPurple;
+        Color foreColor = Color.White;
 
         public FrmMain()
         {
             InitializeComponent();
+            LblMessage.Select();
         }
 
-        private void MainMenu_Load(object sender, EventArgs e)
+        private void FrmMain_Load(object sender, EventArgs e)
         {
-            lab.Cursor = Cursors.Hand;
-            lab.Click += new EventHandler(this.LabClick);
+            label.Cursor = Cursors.Hand;
+            label.Click += new EventHandler(LabClick);
         }
 
-        private void LabClick(object sender, EventArgs e)
+        private void BtnColourAndSend_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Você clicou na mensagem!");
-        }
-
-        private void Message(string message, bool sucess = true)
-        {
-            var width = this.Width;
-            var height = 40;
-
-            this.Enabled = false;
-            if (this.Controls.Contains(lab))
+            LblMessage.Select();
+            if (Controls.Contains(label))
             {
                 Task.Run(() =>
                 {
+                    var height = 40;
+                    var width = Width;
                     for (int i = height; i >= 0; i -= 2)
                     {
                         Invoke((MethodInvoker)delegate
                         {
-                            lab.Size = new Size(width, i);
+                            label.Size = new Size(width, i);
                         });
                         Thread.Sleep(10);
                     }
                     Invoke((MethodInvoker)delegate
                     {
-                        this.Controls.Remove(lab);
-                        Message(message, sucess);
+                        Controls.Remove(label);
+                        BtnColourAndSend_Click(sender, e);
                     });
                 });
             }
             else
             {
-                lab.Size = new Size(width, 0);
-                lab.Location = new Point(0, 0);
-                lab.TextAlign = ContentAlignment.MiddleCenter;
-                lab.Text = message;
+                if (sender == BtnBackColour && Colour.ShowDialog() == DialogResult.OK) backColor = Colour.Color;
+                else if (sender == BtnForeColour && Colour.ShowDialog() == DialogResult.OK) foreColor = Colour.Color;
+                else if (sender == BtnSend) Message(TxtMessage.Text);
+            }
+        }
 
-                if (sucess) lab.BackColor = Color.FromArgb(60, 0, 140, 255);
-                else lab.BackColor = Color.FromArgb(60, 255, 0, 144);
-                this.Controls.Add(lab);
-                lab.BringToFront();
+        private void PicLicense_Click(object sender, EventArgs e)
+        {
+            var t = "Email icons created by Freepik\nhttps://www.flaticon.com/free-icons/email\n\nColor icons created by Freepik\nhttps://www.flaticon.com/free-icons/color\n\nDriving license icons created by Freepik\nhttps://www.flaticon.com/free-icons/driving-license";
+            var c = "Flaticon";
+            var b = MessageBoxButtons.OK;
+            var i = MessageBoxIcon.Information;
+
+            MessageBox.Show(t, c, b, i);
+        }
+
+        private void Message(string message, bool sucess = true)
+        {
+            var width = Width;
+            var height = 40;
+
+            Enabled = false;
+            if (!Controls.Contains(label))
+            {
+                label.Size = new Size(width, 0);
+                label.Location = new Point(0, 0);
+                label.TextAlign = ContentAlignment.MiddleCenter;
+                label.Text = message;
+
+                label.BackColor = backColor;
+                label.ForeColor = foreColor;
+                Controls.Add(label);
+                label.BringToFront();
 
                 Task.Run(() =>
                 {
@@ -74,26 +97,26 @@ namespace CustomMSG
                     {
                         Invoke((MethodInvoker)delegate
                         {
-                            lab.Size = new Size(width, i);
+                            label.Size = new Size(width, i);
                         });
                         Thread.Sleep(10);
                     }
                     Invoke((MethodInvoker)delegate
                     {
-                        this.Enabled = true;
+                        Enabled = true;
                     });
                 });
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void LabClick(object sender, EventArgs e)
         {
-            Message("Você enviou uma mensagem com sucesso!");
-        }
+            var t = label.Text;
+            var c = "CustomMSG";
+            var b = MessageBoxButtons.OK;
+            var i = MessageBoxIcon.Information;
 
-        private void button2_Click(object sender, EventArgs e)
-        {
-            Message("Ocorreu um erro ao tentar enviar a mensagem.", false);
+            MessageBox.Show(t, c, b, i);
         }
     }
 }
